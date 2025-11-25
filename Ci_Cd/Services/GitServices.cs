@@ -19,7 +19,7 @@ public string CloneRepository(string repoUrl)
         UseShellExecute = false,
         CreateNoWindow = true
     };
-
+    
     Console.WriteLine($"[Git] Запускаю клонирование: {repoUrl}");
     
     using (var process = Process.Start(processInfo))

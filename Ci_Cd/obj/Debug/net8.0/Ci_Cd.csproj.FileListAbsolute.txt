@@ -44,3 +44,5 @@
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/runtimes/win-arm64/native/git2-3f4182d.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/runtimes/win-x64/native/git2-3f4182d.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/runtimes/win-x86/native/git2-3f4182d.dll
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.sourcelink.json
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/detectors.json

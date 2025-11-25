@@ -24,6 +24,12 @@ builder.Services.AddScoped<IAnalyzerService, AnalyzerService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IExecutionService, ExecutionService>();
 
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.AddConsole();
+    loggingBuilder.AddDebug();
+});
+
 var app = builder.Build();
 
 // пеплайн

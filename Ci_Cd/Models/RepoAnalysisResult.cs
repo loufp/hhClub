@@ -12,7 +12,12 @@ namespace Ci_Cd.Models
             NodeJs,
             Go,
             Python,
-            Java
+            Java,
+            Rust,
+            Cpp,
+            PHP,
+            Ruby,
+            Elixir
         }
 
         public ProjectLanguage Language { get; set; } = ProjectLanguage.Unknown;

@@ -1,0 +1,121 @@
+# CI/CD Pipeline Analysis Result
+# Repository: https://github.com/loufp/hhClub
+# Analysis Date: 2025-11-25
+# Analyzer Version: 1.0 (Data-Driven)
+
+---
+repository:
+  url: "https://github.com/loufp/hhClub"
+  analyzed_at: "2025-11-25T00:00:00Z"
+
+analysis:
+  status: "success"
+  language: "DotNet"
+  framework: "ASP.NET Core"
+  has_dockerfile: false
+  
+  build_commands:
+    - "dotnet restore"
+    - "dotnet build"
+    - "dotnet test"
+
+  detection_details:
+    triggers_matched:
+      - ".csproj files found"
+      - "Program.cs detected"
+    
+    framework_indicators:
+      - "Microsoft.AspNetCore dependencies"
+      - "ASP.NET Core project structure"
+    
+    confidence: "high"
+    score: 10
+
+gitlab_ci:
+  filename: ".gitlab-ci.yml"
+  content: |
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    stages:
+      - build
+      - test
+
+    build_job:
+      stage: build
+      script:
+        - dotnet restore
+        - dotnet build
+        - dotnet test
+
+    test_job:
+      stage: test
+      script:
+        - echo 'Running tests...'
+        - dotnet test
+
+jenkinsfile:
+  filename: "Jenkinsfile"
+  content: |
+    pipeline {
+        agent {
+            docker { image 'mcr.microsoft.com/dotnet/sdk:8.0' }
+        }
+
+        stages {
+            stage('Build') {
+                steps {
+                    sh 'dotnet restore'
+                    sh 'dotnet build'
+                    sh 'dotnet test'
+                }
+            }
+
+            stage('Test') {
+                steps {
+                    sh 'dotnet test'
+                }
+            }
+
+        }
+    }
+
+docker:
+  recommended_image: "mcr.microsoft.com/dotnet/sdk:8.0"
+  base_images:
+    - "mcr.microsoft.com/dotnet/sdk:8.0"
+    - "mcr.microsoft.com/dotnet/aspnet:8.0"
+
+execution:
+  executed: false
+  reason: "execute parameter set to false"
+  
+recommendations:
+  - "Add Dockerfile for containerization"
+  - "Consider adding docker-compose.yml for local development"
+  - "Set up automated testing in CI pipeline"
+  - "Configure code coverage reporting"
+
+project_metadata:
+  detected_frameworks:
+    primary: "ASP.NET Core"
+    secondary: []
+  
+  supported_operations:
+    - "build"
+    - "test"
+    - "restore"
+  
+  ci_cd_platforms:
+    - "GitLab CI"
+    - "Jenkins"
+    - "GitHub Actions (can be generated)"
+    - "Azure DevOps (can be generated)"
+
+analyzer_info:
+  version: "1.0"
+  approach: "data-driven"
+  rules_source: "detectors.json"
+  detection_method: "scoring-based"
+  languages_supported: 11
+  frameworks_supported: 17+
+

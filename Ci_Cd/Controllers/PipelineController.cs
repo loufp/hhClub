@@ -51,7 +51,7 @@ namespace Ci_Cd.Controllers
                 var gitlab = _template.GenerateGitLabCi(analysis);
                 var jenkins = _template.GenerateJenkinsfile(analysis);
 
-                ExecutionResult execRes = null;
+                ExecutionResult? execRes = null;
                 if (shouldExec)
                 {
                     var key = Environment.GetEnvironmentVariable("PIPELINE_API_KEY");
@@ -65,7 +65,7 @@ namespace Ci_Cd.Controllers
                         commands.Add("echo 'Skipping push in execute mode unless registry configured'");
                     }
 
-                    string dockerImage = analysis.Language switch
+                    string? dockerImage = analysis.Language switch
                     {
                         RepoAnalysisResult.ProjectLanguage.DotNet => "mcr.microsoft.com/dotnet/sdk:8.0",
                         RepoAnalysisResult.ProjectLanguage.NodeJs => "node:18-alpine",
@@ -80,7 +80,7 @@ namespace Ci_Cd.Controllers
                         try
                         {
                             execRes = await _execService.RunInContainer(repoPath, commands, dockerImage, TimeSpan.FromMinutes(10));
-                            if (execRes.ExitCode == -2) execRes = await _execService.Run(repoPath, commands, TimeSpan.FromMinutes(10));
+                            if (execRes != null && execRes.ExitCode == -2) execRes = await _execService.Run(repoPath, commands, TimeSpan.FromMinutes(10));
                         }
                         catch
                         {
@@ -146,7 +146,7 @@ namespace Ci_Cd.Controllers
 
         private static (string, bool) ParseBody(string raw, string repoFromQuery, bool execFromQuery)
         {
-            var repo = repoFromQuery ?? string.Empty;
+            var repo = repoFromQuery;
             var exec = execFromQuery;
             if (string.IsNullOrWhiteSpace(raw)) return (repo, exec);
 

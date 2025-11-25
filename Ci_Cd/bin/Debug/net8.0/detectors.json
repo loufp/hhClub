@@ -1,0 +1,153 @@
+{
+  "frameworks": [
+    {
+      "name": "ASP.NET Core",
+      "language": "DotNet",
+      "languageDetectionTriggers": [".csproj"],
+      "filePatterns": ["Program.cs", "Startup.cs"],
+      "dependencyNames": ["Microsoft.AspNetCore", "Microsoft.NET.Sdk.Web"],
+      "buildCommands": ["dotnet restore", "dotnet build", "dotnet test"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "DotNet",
+      "language": "DotNet",
+      "languageDetectionTriggers": [".csproj", ".cs"],
+      "buildCommands": ["dotnet restore", "dotnet build", "dotnet test"],
+      "weight": 3,
+      "threshold": 1
+    },
+    {
+      "name": "Next.js",
+      "language": "NodeJs",
+      "languageDetectionTriggers": ["package.json"],
+      "filePatterns": ["next.config.js", "pages"],
+      "dependencyNames": ["next"],
+      "buildCommands": ["npm install", "npm run build", "npm run test"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "NodeJs",
+      "language": "NodeJs",
+      "languageDetectionTriggers": ["package.json", ".js", ".ts"],
+      "buildCommands": ["npm install", "npm test"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Django",
+      "language": "Python",
+      "languageDetectionTriggers": ["requirements.txt", "pyproject.toml"],
+      "filePatterns": ["manage.py"],
+      "dependencyNames": ["django"],
+      "buildCommands": ["pip install -r requirements.txt", "python manage.py test"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "Python",
+      "language": "Python",
+      "languageDetectionTriggers": ["requirements.txt", "pyproject.toml", "setup.py", ".py"],
+      "buildCommands": ["pip install -r requirements.txt", "pytest"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Spring Boot",
+      "language": "Java",
+      "languageDetectionTriggers": ["pom.xml", "build.gradle", "build.gradle.kts"],
+      "dependencyNames": ["org.springframework.boot", "spring-boot-starter"],
+      "buildCommands": ["mvn clean install", "mvn test"],
+      "weight": 12,
+      "threshold": 10
+    },
+    {
+      "name": "Java",
+      "language": "Java",
+      "languageDetectionTriggers": ["pom.xml", "build.gradle", "build.gradle.kts", ".java"],
+      "buildCommands": ["mvn clean install", "mvn test"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Laravel",
+      "language": "PHP",
+      "languageDetectionTriggers": ["composer.json"],
+      "filePatterns": ["artisan"],
+      "dependencyNames": ["laravel/framework"],
+      "buildCommands": ["composer install", "vendor/bin/phpunit"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "PHP",
+      "language": "PHP",
+      "languageDetectionTriggers": ["composer.json", ".php"],
+      "buildCommands": ["composer install", "vendor/bin/phpunit"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Ruby on Rails",
+      "language": "Ruby",
+      "languageDetectionTriggers": ["Gemfile"],
+      "filePatterns": ["bin/rails"],
+      "dependencyNames": ["rails"],
+      "buildCommands": ["bundle install", "bundle exec rake test"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "Ruby",
+      "language": "Ruby",
+      "languageDetectionTriggers": ["Gemfile", ".rb"],
+      "buildCommands": ["bundle install", "bundle exec rake"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Phoenix",
+      "language": "Elixir",
+      "languageDetectionTriggers": ["mix.exs"],
+      "dependencyNames": ["phoenix"],
+      "buildCommands": ["mix deps.get", "mix test"],
+      "weight": 10,
+      "threshold": 8
+    },
+    {
+      "name": "Elixir",
+      "language": "Elixir",
+      "languageDetectionTriggers": ["mix.exs", ".ex", ".exs"],
+      "buildCommands": ["mix deps.get", "mix test"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Rust",
+      "language": "Rust",
+      "languageDetectionTriggers": ["Cargo.toml", ".rs"],
+      "buildCommands": ["cargo build", "cargo test"],
+      "weight": 5,
+      "threshold": 1
+    },
+    {
+      "name": "C/C++",
+      "language": "Cpp",
+      "languageDetectionTriggers": ["Makefile", "CMakeLists.txt", ".c", ".cpp", ".h"],
+      "buildCommands": ["cmake .", "make"],
+      "weight": 1,
+      "threshold": 1
+    },
+    {
+      "name": "Go",
+      "language": "Go",
+      "languageDetectionTriggers": ["go.mod", ".go"],
+      "buildCommands": ["go build ./...", "go test ./..."],
+      "weight": 5,
+      "threshold": 1
+    }
+  ]
+}
+

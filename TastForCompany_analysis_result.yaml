@@ -1,0 +1,132 @@
+# CI/CD Pipeline Analysis Result
+# Repository: https://github.com/loufp/TastForCompany
+# Analysis Date: 2025-11-25
+# Analyzer Version: 1.0 (Data-Driven)
+
+---
+repository:
+  url: "https://github.com/loufp/TastForCompany"
+  analyzed_at: "2025-11-25T00:25:37Z"
+
+analysis:
+  status: "success"
+  language: "DotNet"
+  framework: "DotNet Core"
+  has_dockerfile: false
+  
+  build_commands:
+    - "dotnet restore"
+    - "dotnet build"
+    - "dotnet test"
+
+  detection_details:
+    triggers_matched:
+      - ".csproj files found"
+    
+    framework_indicators:
+      - "DotNet Core project structure"
+      - "Standard .NET project"
+    
+    confidence: "medium"
+    score: 1
+    note: "Generic .NET project detected (not ASP.NET Core or specific framework)"
+
+gitlab_ci:
+  filename: ".gitlab-ci.yml"
+  content: |
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    stages:
+      - build
+      - test
+
+    build_job:
+      stage: build
+      script:
+        - dotnet restore
+        - dotnet build
+        - dotnet test
+
+    test_job:
+      stage: test
+      script:
+        - echo 'Running tests...'
+        - dotnet test
+
+jenkinsfile:
+  filename: "Jenkinsfile"
+  content: |
+    pipeline {
+        agent {
+            docker { image 'mcr.microsoft.com/dotnet/sdk:8.0' }
+        }
+
+        stages {
+            stage('Build') {
+                steps {
+                    sh 'dotnet restore'
+                    sh 'dotnet build'
+                    sh 'dotnet test'
+                }
+            }
+
+            stage('Test') {
+                steps {
+                    sh 'dotnet test'
+                }
+            }
+
+        }
+    }
+
+docker:
+  recommended_image: "mcr.microsoft.com/dotnet/sdk:8.0"
+  base_images:
+    - "mcr.microsoft.com/dotnet/sdk:8.0"
+    - "mcr.microsoft.com/dotnet/runtime:8.0"
+
+execution:
+  executed: false
+  reason: "execute parameter set to false"
+  
+recommendations:
+  - "Add Dockerfile for containerization"
+  - "Consider specifying the project type (Console, Library, etc.)"
+  - "Set up automated testing in CI pipeline"
+  - "Add project documentation"
+
+project_metadata:
+  detected_frameworks:
+    primary: "DotNet Core"
+    secondary: []
+  
+  project_type: "Generic .NET"
+  
+  supported_operations:
+    - "build"
+    - "test"
+    - "restore"
+    - "publish"
+  
+  ci_cd_platforms:
+    - "GitLab CI"
+    - "Jenkins"
+    - "GitHub Actions (can be generated)"
+    - "Azure DevOps (can be generated)"
+
+comparison_with_hhclub:
+  hhclub_framework: "ASP.NET Core"
+  tastforcompany_framework: "DotNet Core (Generic)"
+  difference: "hhClub is a web application with ASP.NET Core, while TastForCompany is a generic .NET project without specific web framework indicators"
+
+analyzer_info:
+  version: "1.0"
+  approach: "data-driven"
+  rules_source: "detectors.json"
+  detection_method: "scoring-based"
+  languages_supported: 11
+  frameworks_supported: 17+
+  
+  detection_logic:
+    explanation: "Generic 'DotNet' rule matched with low score (weight=1), indicating a basic .NET project without specific framework indicators like ASP.NET Core"
+
