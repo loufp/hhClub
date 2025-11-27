@@ -1,11 +1,11 @@
 # =================================================================
-# Простой Docker Compose для запуска базовой CI/CD инфраструктуры
+# Простой Docker Compose для запуска базовой CI/CD инфраструктуры  
 # =================================================================
 #
-# Этот файл запускает 3 основных сервиса:
-# 1. Jenkins: CI/CD сервер (http://localhost:8080)
-# 2. SonarQube: Анализатор качества кода (http://localhost:9000)
-# 3. Nexus: Менеджер артефактов (http://localhost:8081)
+# Этот файл запускает 3 основных сервиса в изолированном режиме:
+# 1. Jenkins: CI/CD сервер (внутри Docker сети)
+# 2. SonarQube: Анализатор качества кода (внутри Docker сети) 
+# 3. Nexus: Менеджер артефактов (внутри Docker сети)
 #
 # Команда для запуска:
 # docker-compose -f docker-compose.simple.yml up -d
@@ -13,22 +13,19 @@
 # Команда для остановки:
 # docker-compose -f docker-compose.simple.yml down
 #
+# Примечание: Сервисы работают изолированно, порты не пробрасываются
+# для совместимости с любыми ОС и избежания конфликтов портов
 # =================================================================
 
-version: '3.8'
 
 services:
   # 1. Jenkins - Сервер для автоматизации CI/CD
   # ------------------------------------------------
-  # URL: http://localhost:8080
   # Назначение: Сборка, тестирование и развертывание ваших проектов.
   jenkins:
-    image: jenkins/jenkins:lts-jdk17 # Ис��ользуем образ с Java 17
+    image: jenkins/jenkins:lts-jdk17 # Используем образ с Java 17
     container_name: jenkins
     restart: unless-stopped
-    ports:
-      - "8080:8080" # Веб-интерфейс
-      - "50000:50000" # Для подключения agent-нод
     volumes:
       - jenkins_data:/var/jenkins_home # Сохраняет данные Jenkins между перезапусками
     environment:
@@ -36,34 +33,41 @@ services:
 
   # 2. SonarQube - Платформа для анализа качества кода
   # ---------------------------------------------------
-  # URL: http://localhost:9000
-  # Логин/Пароль: admin / admin
+  # Логин/Пароль по умолчанию: admin / admin
   # Назначение: Поиск багов, уязвимостей и "запахов" в коде.
   sonarqube:
     image: sonarqube:10.3-community # Стабильная community-версия
     container_name: sonarqube
     restart: unless-stopped
-    ports:
-      - "9000:9000" # Веб-интерфейс
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
     environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true # Необходимо ��ля запуска в Docker
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true # Необходимо для запуска в Docker
+      - SONAR_JDBC_URL=jdbc:h2:mem:sonar # Используем встроенную H2 БД
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9000/api/system/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # 3. Nexus - Менеджер репозиториев артефактов
   # ------------------------------------------------
-  # URL: http://localhost:8081
   # Назначение: Хранение и кеширование зависимостей (Maven, npm) и сборок.
   nexus:
     image: sonatype/nexus3:3.63.0 # Конкретная версия для стабильности
     container_name: nexus
     restart: unless-stopped
-    ports:
-      - "8081:8081" # Веб-интерфейс
     volumes:
       - nexus_data:/nexus-data # Сохраняет данные Nexus
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms1200m -Xmx1200m # Оптимизация памяти
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/service/rest/v1/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 # Docker Volumes для сохранения данных
 volumes:
@@ -77,4 +81,3 @@ volumes:
     driver: local
   nexus_data:
     driver: local
-

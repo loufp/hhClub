@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ci_Cd")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+47b611efa870de15053c6bebdecce74685c9abb8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+083561afe8df268c75ce620e0c625fdf5b57eb6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ci_Cd")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ci_Cd")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

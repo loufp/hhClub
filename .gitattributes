@@ -1,0 +1,25 @@
+# Ensure consistent line endings across operating systems
+* text=auto
+
+# Specific file types
+*.cs text diff=csharp
+*.yml text
+*.yaml text
+*.json text
+*.md text
+*.txt text
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Binary files
+*.dll binary
+*.exe binary
+*.jar binary
+*.zip binary
+*.tar.gz binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

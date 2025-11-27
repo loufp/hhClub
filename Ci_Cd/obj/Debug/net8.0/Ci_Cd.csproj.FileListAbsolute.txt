@@ -8,7 +8,6 @@
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.AssemblyInfoInputs.cache
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.AssemblyInfo.cs
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.csproj.CoreCompileInputs.cache
-/Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.csproj.CopyComplete
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/refint/Ci_Cd.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.pdb
@@ -43,3 +42,4 @@
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/zh-Hans/System.CommandLine.resources.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/zh-Hant/System.CommandLine.resources.dll
 /Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/bin/Debug/net8.0/Microsoft.Extensions.FileSystemGlobbing.dll
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/Ci_Cd/obj/Debug/net8.0/Ci_Cd.csproj.Up2Date
