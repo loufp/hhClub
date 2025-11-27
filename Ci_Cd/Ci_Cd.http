@@ -1,6 +1,0 @@
-@Ci_Cd_HostAddress = http://localhost:5034
-
-GET {{Ci_Cd_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

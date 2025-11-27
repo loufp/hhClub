@@ -1,0 +1,55 @@
+variables:
+  DOCKER_IMAGE_NAME: "{{IMAGE_NAME}}"
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  ARTIFACTORY_URL: ""
+  ARTIFACTORY_REPO: ""
+  GITHUB_REPO: ""
+
+image: {{IMAGE}}
+
+stages:
+  - build
+  - test
+  - package
+
+build_job:
+  stage: build
+  script:
+{{BUILD_CMDS}}
+  cache:
+    paths:
+      - .gradle/
+      - ~/.gradle/
+
+test_job:
+  stage: test
+  script:
+{{TEST_CMDS}}
+
+package_job:
+  stage: package
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE_NAME . -f {{DOCKERFILE}}
+    - docker push $DOCKER_IMAGE_NAME
+    - mkdir -p package_artifacts || true
+    - if [ -d build/libs ]; then cp -r build/libs package_artifacts/ || true; fi
+    - tar -czf artifact.tar.gz package_artifacts || true
+    - |-
+      if [ -n "$ARTIFACTORY_USER" ] && [ -n "$ARTIFACTORY_PASSWORD" ] && [ -n "$ARTIFACTORY_URL" ]; then
+        chmod +x ci-scripts/upload_artifact.sh || true
+        ./ci-scripts/upload_artifact.sh artifact.tar.gz artifactory "$ARTIFACTORY_URL" "$ARTIFACTORY_REPO" "$ARTIFACTORY_USER" "$ARTIFACTORY_PASSWORD" || true
+      else
+        echo 'Artifactory credentials or URL not set, skipping Artifactory upload'
+      fi
+    - |-
+      if [ -n "$GITHUB_TOKEN" ] && [ -n "$GITHUB_REPO" ]; then
+        chmod +x ci-scripts/upload_artifact.sh || true
+        ./ci-scripts/upload_artifact.sh artifact.tar.gz github "$GITHUB_REPO" "$GITHUB_TOKEN" || true
+      else
+        echo 'GitHub token or repo not set, skipping GitHub Releases'
+      fi
+  needs: ["build_job"]

@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "dgSpecHash": "EleKRZisXjbGqorK4al/uTwZ7qqepJgQWInUDdNo3+ynLAgCr2SzIdi/Kl83v1h6UVaF1mXxp2EPHGKJ14E0YA==",
+  "success": true,
+  "projectFilePath": "/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/UploaderCli.csproj",
+  "expectedPackageFiles": [
+    "/Users/kirillkirill13let/.nuget/packages/system.commandline/2.0.0-beta4.22272.1/system.commandline.2.0.0-beta4.22272.1.nupkg.sha512",
+    "/Users/kirillkirill13let/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/Users/kirillkirill13let/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "cicd.uploader.tool depends on System.CommandLine (>= 2.0.0-beta4.22112.1) but System.CommandLine 2.0.0-beta4.22112.1 was not found. An approximate best match of System.CommandLine 2.0.0-beta4.22272.1 was resolved.",
+      "libraryId": "System.CommandLine",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.Text.Json' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-8g4q-xg66-9fp4",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.Text.Json' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-hh2w-p6rv-4g7w",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

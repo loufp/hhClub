@@ -8,7 +8,8 @@
       "dependencyNames": ["Microsoft.AspNetCore", "Microsoft.NET.Sdk.Web"],
       "buildCommands": ["dotnet restore", "dotnet build", "dotnet test"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "ASP.NET Core chosen for .NET web apps — uses dotnet CLI, good integration with Docker and Azure/AWS."
     },
     {
       "name": "DotNet",
@@ -16,7 +17,8 @@
       "languageDetectionTriggers": [".csproj", ".cs"],
       "buildCommands": ["dotnet restore", "dotnet build", "dotnet test"],
       "weight": 3,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General .NET projects — use dotnet CLI for build/test and multi-stage Docker for publish."
     },
     {
       "name": "Next.js",
@@ -26,15 +28,28 @@
       "dependencyNames": ["next"],
       "buildCommands": ["npm install", "npm run build", "npm run test"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "Next.js applications require a Node-based build step and static/server build; uses npm/yarn/pnpm and supports optimized Docker builds."
     },
     {
       "name": "NodeJs",
       "language": "NodeJs",
       "languageDetectionTriggers": ["package.json", ".js", ".ts"],
-      "buildCommands": ["npm install", "npm test"],
+      "buildCommands": ["npm ci", "npm test"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "Node.js general projects — npm/pnpm/yarn used for dependency management, Docker multi-stage for production images."
+    },
+    {
+      "name": "TypeScript",
+      "language": "NodeJs",
+      "languageDetectionTriggers": ["tsconfig.json", "package.json"],
+      "filePatterns": ["tsconfig.json"],
+      "dependencyNames": ["typescript"],
+      "buildCommands": ["npm ci", "npm run build"],
+      "weight": 8,
+      "threshold": 5,
+      "rationale": "TypeScript projects typically need a transpile step (tsc) and possibly bundlers (webpack, esbuild); prefer pnpm/yarn for monorepos."
     },
     {
       "name": "Django",
@@ -44,7 +59,8 @@
       "dependencyNames": ["django"],
       "buildCommands": ["pip install -r requirements.txt", "python manage.py test"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "Django is a common Python web framework; requires pip/venv, typical test commands use manage.py or pytest."
     },
     {
       "name": "Python",
@@ -52,24 +68,38 @@
       "languageDetectionTriggers": ["requirements.txt", "pyproject.toml", "setup.py", ".py"],
       "buildCommands": ["pip install -r requirements.txt", "pytest"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General Python projects use pip or poetry; tests commonly run with pytest. Docker multi-stage can provide wheels for faster install."
     },
     {
       "name": "Spring Boot",
       "language": "Java",
       "languageDetectionTriggers": ["pom.xml", "build.gradle", "build.gradle.kts"],
       "dependencyNames": ["org.springframework.boot", "spring-boot-starter"],
-      "buildCommands": ["mvn clean install", "mvn test"],
+      "buildCommands": ["mvn -B -DskipTests=false clean package", "mvn test"],
       "weight": 12,
-      "threshold": 10
+      "threshold": 10,
+      "rationale": "Spring Boot is the de-facto Java framework for microservices; uses Maven/Gradle, requires multi-stage Docker for lean runtime images."
     },
     {
       "name": "Java",
       "language": "Java",
       "languageDetectionTriggers": ["pom.xml", "build.gradle", "build.gradle.kts", ".java"],
-      "buildCommands": ["mvn clean install", "mvn test"],
+      "buildCommands": ["mvn -B -DskipTests=false clean package", "mvn test"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General Java projects — use Maven/Gradle; multi-stage Dockerfile recommended to build and run the JAR."
+    },
+    {
+      "name": "Kotlin",
+      "language": "Java",
+      "languageDetectionTriggers": ["build.gradle.kts", "settings.gradle.kts", "build.gradle"],
+      "filePatterns": ["build.gradle.kts", "settings.gradle.kts"],
+      "dependencyNames": ["kotlin"],
+      "buildCommands": ["./gradlew build", "./gradlew test"],
+      "weight": 8,
+      "threshold": 5,
+      "rationale": "Kotlin projects typically use Gradle (Kotlin DSL); prefer Gradle’s wrapper for reproducible builds and multi-stage Docker to reduce image size."
     },
     {
       "name": "Laravel",
@@ -79,7 +109,8 @@
       "dependencyNames": ["laravel/framework"],
       "buildCommands": ["composer install", "vendor/bin/phpunit"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "Laravel is a common PHP framework; uses Composer for dependency management."
     },
     {
       "name": "PHP",
@@ -87,7 +118,8 @@
       "languageDetectionTriggers": ["composer.json", ".php"],
       "buildCommands": ["composer install", "vendor/bin/phpunit"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General PHP projects use Composer; tests via phpunit."
     },
     {
       "name": "Ruby on Rails",
@@ -97,7 +129,8 @@
       "dependencyNames": ["rails"],
       "buildCommands": ["bundle install", "bundle exec rake test"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "Rails projects use Bundler and rake/test frameworks; containerization uses Ruby base images."
     },
     {
       "name": "Ruby",
@@ -105,7 +138,8 @@
       "languageDetectionTriggers": ["Gemfile", ".rb"],
       "buildCommands": ["bundle install", "bundle exec rake"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General Ruby projects use Bundler; tests via rake or rspec."
     },
     {
       "name": "Phoenix",
@@ -114,7 +148,8 @@
       "dependencyNames": ["phoenix"],
       "buildCommands": ["mix deps.get", "mix test"],
       "weight": 10,
-      "threshold": 8
+      "threshold": 8,
+      "rationale": "Phoenix framework uses Elixir mix tool for builds and tests."
     },
     {
       "name": "Elixir",
@@ -122,7 +157,8 @@
       "languageDetectionTriggers": ["mix.exs", ".ex", ".exs"],
       "buildCommands": ["mix deps.get", "mix test"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "General Elixir projects use mix for build/test."
     },
     {
       "name": "Rust",
@@ -130,7 +166,8 @@
       "languageDetectionTriggers": ["Cargo.toml", ".rs"],
       "buildCommands": ["cargo build", "cargo test"],
       "weight": 5,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "Rust projects use cargo for build/test; multi-stage images can use cargo build then distroless runtime."
     },
     {
       "name": "C/C++",
@@ -138,7 +175,8 @@
       "languageDetectionTriggers": ["Makefile", "CMakeLists.txt", ".c", ".cpp", ".h"],
       "buildCommands": ["cmake .", "make"],
       "weight": 1,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "C/C++ projects use make/cmake; Docker images usually use multi-stage builds to compile and copy binaries."
     },
     {
       "name": "Go",
@@ -146,8 +184,8 @@
       "languageDetectionTriggers": ["go.mod", ".go"],
       "buildCommands": ["go build ./...", "go test ./..."],
       "weight": 5,
-      "threshold": 1
+      "threshold": 1,
+      "rationale": "Go modules and `go` toolchain provide fast builds; use multi-stage to produce small static binaries (distroless)."
     }
   ]
 }
-

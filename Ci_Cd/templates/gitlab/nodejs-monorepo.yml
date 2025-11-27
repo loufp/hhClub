@@ -1,0 +1,29 @@
+variables:
+  DOCKER_IMAGE_NAME: "{{IMAGE_NAME}}"
+  ARTIFACTORY_URL: ""
+  ARTIFACTORY_REPO: ""
+
+image: {{IMAGE}}
+
+stages:
+  - build
+  - test
+  - package
+
+build_all:
+  stage: build
+  script:
+    - echo 'Bootstrapping monorepo'
+    - npm ci
+    - npm run build --workspaces || true
+  parallel: 1
+
+package_all:
+  stage: package
+  script:
+    - echo 'Packaging all subprojects'
+    - tar -czf artifact.tar.gz .
+    - chmod +x ci-scripts/upload_artifact.sh || true
+    - ./ci-scripts/upload_artifact.sh artifact.tar.gz artifactory "$ARTIFACTORY_URL" "$ARTIFACTORY_REPO" "$ARTIFACTORY_USER" "$ARTIFACTORY_PASSWORD" || true
+  needs: ["build_all"]
+

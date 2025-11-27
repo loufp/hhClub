@@ -1,0 +1,14 @@
+pipeline {
+  agent any
+  environment {
+    IMAGE="{{IMAGE_NAME}}"
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Install') { steps { sh '{{BUILD_CMD}}' } }
+    stage('Unit Tests') { steps { sh '{{TEST_CMD}}' } }
+    stage('Sonar') { steps { echo 'Configure sonar-scanner manually for python' } }
+    stage('Docker Build & Push') { steps { script { docker.build("${IMAGE}:$BUILD_NUMBER").push() } } }
+  }
+}
+

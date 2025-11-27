@@ -1,0 +1,97 @@
+variables:
+  SONAR_USER_HOME: ".sonar"
+  SONAR_HOST_URL: "http://sonarqube:9000"
+  GIT_DEPTH: "0"
+  DOCKER_IMAGE_NAME: "{{IMAGE_NAME}}"
+  ARTIFACTORY_URL: ""
+  ARTIFACTORY_REPO: ""
+  GITHUB_REPO: ""
+
+image: {{IMAGE}}
+
+stages:
+  - build
+  - test
+  - analysis
+  - package
+  - deploy_staging
+  - deploy_production
+
+build_job:
+  stage: build
+  script:
+{{BUILD_CMDS}}
+  artifacts:
+    paths:
+      - build/
+      - dist/
+      - target/
+
+test_job:
+  stage: test
+  script:
+{{TEST_CMDS}}
+
+sonar_analysis_job:
+  stage: analysis
+  image: sonarsource/sonar-scanner-cli:latest
+  script:
+    - sonar-scanner -Dsonar.projectKey=${CI_PROJECT_NAME} -Dsonar.sources=. -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}
+  needs: ["test_job"]
+
+package_job:
+  stage: package
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE_NAME . -f {{DOCKERFILE}}
+    - docker push $DOCKER_IMAGE_NAME
+    - mkdir -p package_artifacts || true
+    - if [ -d build ]; then cp -r build package_artifacts/ || true; fi
+    - if [ -d dist ]; then cp -r dist package_artifacts/ || true; fi
+    - if [ -d target ]; then cp -r target package_artifacts/ || true; fi
+    - tar -czf artifact.tar.gz package_artifacts || true
+    - |-
+      if [ -n "$NEXUS_USER" ] && [ -n "$NEXUS_PASSWORD" ]; then
+        curl -u $NEXUS_USER:$NEXUS_PASSWORD --upload-file artifact.tar.gz $NEXUS_URL/repository/$NEXUS_REPO/$(basename $CI_PROJECT_PATH)-$CI_COMMIT_SHORT_SHA.tar.gz || true
+      else
+        echo 'Nexus credentials not set, skipping artifact upload'
+      fi
+    - |-
+      if [ -n "$ARTIFACTORY_USER" ] && [ -n "$ARTIFACTORY_PASSWORD" ] && [ -n "$ARTIFACTORY_URL" ]; then
+        chmod +x ci-scripts/upload_artifact.sh || true
+        ./ci-scripts/upload_artifact.sh artifact.tar.gz artifactory "$ARTIFACTORY_URL" "$ARTIFACTORY_REPO" "$ARTIFACTORY_USER" "$ARTIFACTORY_PASSWORD" || true
+      else
+        echo 'Artifactory credentials or URL not set, skipping Artifactory upload'
+      fi
+    - |-
+      if [ -n "$GITHUB_TOKEN" ] && [ -n "$GITHUB_REPO" ]; then
+        chmod +x ci-scripts/upload_artifact.sh || true
+        ./ci-scripts/upload_artifact.sh artifact.tar.gz github "$GITHUB_REPO" "$GITHUB_TOKEN" || true
+      else
+        echo 'GitHub token or repo not set, skipping GitHub Releases'
+      fi
+  needs: ["build_job"]
+
+deploy_staging_job:
+  stage: deploy_staging
+  script:
+    - echo 'Deploying to Staging...'
+    - echo "Deploying image $DOCKER_IMAGE_NAME"
+  environment:
+    name: staging
+    url: http://staging.example.com
+  needs: ["package_job"]
+
+deploy_production_job:
+  stage: deploy_production
+  when: manual
+  script:
+    - echo 'Deploying to Production...'
+    - echo "Deploying image $DOCKER_IMAGE_NAME"
+  environment:
+    name: production
+    url: http://production.example.com
+  needs: ["deploy_staging_job"]

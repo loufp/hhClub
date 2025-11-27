@@ -1,0 +1,173 @@
+image: node:20-alpine
+
+variables:
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+  CYPRESS_CACHE_FOLDER: "$CI_PROJECT_DIR/.cache/Cypress"
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm
+    - node_modules
+    - .next/cache
+
+stages:
+  - install
+  - build
+  - test
+  - sonar
+  - docker_build
+  - docker_push
+  - deploy
+
+install:
+  stage: install
+  script:
+    - npm ci --prefer-offline --no-audit
+  artifacts:
+    paths:
+      - node_modules
+    expire_in: 1 hour
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+      - build/
+      - .next/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  script:
+    - npm run test -- --coverage --watchAll=false
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+lint:
+  stage: test
+  script:
+    - npm run lint
+
+sonar:
+  stage: sonar
+  image: sonarsource/sonar-scanner-cli:latest
+  dependencies:
+    - test
+  rules:
+    - if: $SONAR_TOKEN
+  before_script:
+    - apk add --no-cache jq curl nodejs npm
+  script:
+    - |
+      cat > sonar-project.properties << EOF
+      sonar.projectKey={{CI_PROJECT_PATH}}
+      sonar.projectName={{PROJECT_NAME}}
+      sonar.projectVersion={{PROJECT_VERSION}}
+      sonar.sources=src
+      sonar.tests=src,test
+      sonar.test.inclusions=**/*.test.ts,**/*.test.js,**/*.spec.ts,**/*.spec.js
+      sonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+      sonar.javascript.lcov.reportPaths=coverage/lcov.info
+      sonar.typescript.tsconfigPath=tsconfig.json
+      sonar.qualitygate.wait=true
+      sonar.qualitygate.timeout=300
+      EOF
+    - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+    - |
+      # Wait for quality gate
+      TASK_URL=$(cat .scannerwork/report-task.txt | grep ceTaskUrl | cut -d'=' -f2-)
+      echo "Waiting for analysis: $TASK_URL"
+      
+      MAX_ATTEMPTS=30
+      ATTEMPT=0
+      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+        sleep 10
+        TASK_STATUS=$(curl -s -u ${SONAR_TOKEN}: "$TASK_URL" | jq -r '.task.status')
+        echo "Status: $TASK_STATUS (attempt $((ATTEMPT+1))/$MAX_ATTEMPTS)"
+        
+        if [ "$TASK_STATUS" = "SUCCESS" ]; then
+          break
+        elif [ "$TASK_STATUS" = "FAILED" ] || [ "$TASK_STATUS" = "CANCELED" ]; then
+          echo "Analysis failed: $TASK_STATUS"
+          exit 1
+        fi
+        ATTEMPT=$((ATTEMPT+1))
+      done
+      
+      ANALYSIS_ID=$(curl -s -u ${SONAR_TOKEN}: "$TASK_URL" | jq -r '.task.analysisId')
+      QG_STATUS=$(curl -s -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/qualitygates/project_status?analysisId=$ANALYSIS_ID" | jq -r '.projectStatus.status')
+      
+      echo "Quality Gate: $QG_STATUS"
+      if [ "$QG_STATUS" != "OK" ]; then
+        echo "Quality gate failed!"
+        curl -s -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/qualitygates/project_status?analysisId=$ANALYSIS_ID" | jq '.projectStatus.conditions'
+        exit 1
+      fi
+
+docker_build:
+  stage: docker_build
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_BUILDKIT: "1"
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker build -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}" -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest" .
+  only:
+    - main
+    - master
+    - develop
+
+docker_push:
+  stage: docker_push
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest"
+  only:
+    - main
+    - master
+    - develop
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploying Node.js app to staging..."
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - develop
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploying Node.js app to production..."
+  environment:
+    name: production
+    url: https://production.example.com
+  when: manual
+  only:
+    - main
+    - master
+

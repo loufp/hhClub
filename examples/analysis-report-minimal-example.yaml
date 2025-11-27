@@ -1,0 +1,37 @@
+# Пример с пустыми коллекциями (минимальный проект)
+timestamp: '2025-11-27T10:00:00.0000000Z'
+
+metadata:
+  projectName: 'minimal-java-app'
+  projectVersion: '1.0.0'
+  language: Java
+  framework: 'Java'
+
+analysis:
+  languageVersion: '17'
+  detectedFrameworks: []
+  buildTools:
+    - 'Maven'
+  testFrameworks: []
+  coverageTools: []
+  detectedPorts: {}
+  healthChecks: []
+  subprojects: 0
+
+artifacts:
+  type: 'jar'
+  path: 'target/*.jar'
+  repository: 'nexus-maven'
+  dockerImage: '$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA'
+
+dependencies:
+  count: 0
+  items: []
+
+caching:
+  Maven: '~/.m2/repository'
+
+recommendations:
+  - 'Add unit tests'
+  - 'Add test coverage tools'
+

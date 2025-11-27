@@ -1,0 +1,5 @@
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/obj/Debug/net8.0/UploaderCli.GeneratedMSBuildEditorConfig.editorconfig
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/obj/Debug/net8.0/UploaderCli.AssemblyInfoInputs.cache
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/obj/Debug/net8.0/UploaderCli.AssemblyInfo.cs
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/obj/Debug/net8.0/UploaderCli.csproj.CoreCompileInputs.cache
+/Users/kirillkirill13let/RiderProjects/Ci_Cd/tools/UploaderCli/obj/Debug/net8.0/UploaderCli.sourcelink.json

@@ -1,0 +1,18 @@
+FROM python:3.11-slim AS builder
+WORKDIR /app
+COPY pyproject.toml poetry.lock* /app/ 2>/dev/null || true
+COPY requirements.txt /app/ 2>/dev/null || true
+RUN python -m pip install --upgrade pip
+RUN if [ -f pyproject.toml ]; then pip install --user poetry && poetry export -f requirements.txt -o requirements.txt --without-hashes; fi
+RUN pip install --user -r requirements.txt || true
+COPY . .
+# produce wheel if present
+RUN python setup.py bdist_wheel 2>/dev/null || true
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+COPY . .
+CMD ["python","-m","uvicorn","app.main:app","--host","0.0.0.0","--port","8080"]
+

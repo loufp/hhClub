@@ -1,0 +1,105 @@
+image: {{DOCKER_IMAGE}}
+
+variables:
+  REGISTRY_URL: "{{CI_REGISTRY}}"
+  IMAGE_NAME: "{{CI_PROJECT_PATH}}"
+  CACHE_KEY: "{{CI_COMMIT_REF_NAME}}"
+
+stages:
+  - build
+  - test
+  - sonar
+  - docker_build
+  - docker_push
+  - deploy
+
+cache:
+  key: ${CACHE_KEY}
+  paths:
+    - .nuget/packages
+    - node_modules/
+    - .gradle/
+    - target/
+    - vendor/
+    - .cache/
+
+build_job:
+  stage: build
+  script:
+    - {{BUILD_COMMANDS}}
+  artifacts:
+    paths:
+      - build/
+      - dist/
+      - target/
+    expire_in: 1 hour
+
+test_job:
+  stage: test
+  script:
+    - {{TEST_COMMANDS}}
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+sonar_job:
+  stage: sonar
+  image: sonarsource/sonar-scanner-cli:latest
+  rules:
+    - if: $SONAR_TOKEN
+  script:
+    - sonar-scanner -Dsonar.projectKey={{CI_PROJECT_PATH}} -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+
+docker_build:
+  stage: docker_build
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker build -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}" -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest" .
+  only:
+    - main
+    - master
+    - develop
+
+docker_push:
+  stage: docker_push
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest"
+  only:
+    - main
+    - master
+    - develop
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploying to staging..."
+    - echo "Image: {{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}"
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - develop
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploying to production..."
+    - echo "Image: {{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}"
+  environment:
+    name: production
+    url: https://production.example.com
+  when: manual
+  only:
+    - main
+    - master
+

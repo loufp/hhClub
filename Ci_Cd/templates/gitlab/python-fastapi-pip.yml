@@ -1,0 +1,110 @@
+image: python:3.11-slim
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - venv
+
+stages:
+  - install
+  - test
+  - sonar
+  - docker_build
+  - docker_push
+  - deploy
+
+before_script:
+  - apt-get update && apt-get install -y --no-install-recommends gcc g++
+  - python -m venv venv
+  - source venv/bin/activate
+  - pip install --upgrade pip wheel
+
+install:
+  stage: install
+  script:
+    - pip install -r requirements.txt
+  artifacts:
+    paths:
+      - venv
+    expire_in: 1 hour
+
+test:
+  stage: test
+  script:
+    - pip install pytest pytest-cov
+    - pytest --cov=. --cov-report=xml --cov-report=term-missing
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    paths:
+      - coverage.xml
+
+lint:
+  stage: test
+  script:
+    - pip install flake8 black
+    - flake8 app
+    - black --check app
+
+sonar:
+  stage: sonar
+  image: sonarsource/sonar-scanner-cli:latest
+  rules:
+    - if: $SONAR_TOKEN
+  script:
+    - sonar-scanner -Dsonar.projectKey={{CI_PROJECT_PATH}} -Dsonar.sources=app -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+
+docker_build:
+  stage: docker_build
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker build -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}" -t "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest" .
+  only:
+    - main
+    - master
+    - develop
+
+docker_push:
+  stage: docker_push
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u "{{CI_REGISTRY_USER}}" -p "{{CI_REGISTRY_PASSWORD}}" "{{CI_REGISTRY}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:{{CI_COMMIT_SHORT_SHA}}"
+    - docker push "{{CI_REGISTRY}}/{{CI_PROJECT_PATH}}:latest"
+  only:
+    - main
+    - master
+    - develop
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploying FastAPI app to staging..."
+  environment:
+    name: staging
+  only:
+    - develop
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploying FastAPI app to production..."
+  environment:
+    name: production
+  when: manual
+  only:
+    - main
+    - master
+

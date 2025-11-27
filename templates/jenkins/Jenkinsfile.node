@@ -1,0 +1,16 @@
+pipeline {
+  agent any
+  environment {
+    IMAGE="{{IMAGE_NAME}}"
+    NODE_ENV="production"
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Install') { steps { sh 'npm ci' } }
+    stage('Build') { steps { sh 'npm run build || true' } }
+    stage('Test') { steps { sh '{{TEST_CMD}}' } }
+    stage('Sonar') { steps { echo 'Sonar step — configure sonar-scanner if available' } }
+    stage('Docker Build & Push') { steps { script { docker.build("${IMAGE}:$BUILD_NUMBER").push() } } }
+  }
+}
+

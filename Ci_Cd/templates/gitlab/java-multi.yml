@@ -1,0 +1,26 @@
+variables:
+  DOCKER_IMAGE_NAME: "{{IMAGE_NAME}}"
+  ARTIFACTORY_URL: ""
+  ARTIFACTORY_REPO: ""
+
+image: {{IMAGE}}
+
+stages:
+  - build
+  - test
+  - package
+
+build_root:
+  stage: build
+  script:
+    - echo 'Building multi-module Gradle project'
+    - ./gradlew build -x test
+
+package_root:
+  stage: package
+  script:
+    - tar -czf artifact.tar.gz .
+    - chmod +x ci-scripts/upload_artifact.sh || true
+    - ./ci-scripts/upload_artifact.sh artifact.tar.gz artifactory "$ARTIFACTORY_URL" "$ARTIFACTORY_REPO" "$ARTIFACTORY_USER" "$ARTIFACTORY_PASSWORD" || true
+  needs: ["build_root"]
+

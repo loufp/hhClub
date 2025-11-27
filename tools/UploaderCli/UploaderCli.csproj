@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>cicd-uploader</ToolCommandName>
+    <PackageId>cicd.uploader.tool</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Ci_Cd Team</Authors>
+    <Description>Uploader CLI tool for Artifactory/Nexus/GitHub</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22112.1" />
+  </ItemGroup>
+</Project>

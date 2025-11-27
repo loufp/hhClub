@@ -1,0 +1,51 @@
+# Пример корректного YAML для Java проекта
+timestamp: '2025-11-27T10:00:00.0000000Z'
+
+metadata:
+  projectName: 'example-java-app'
+  projectVersion: '1.0.0'
+  language: Java
+  framework: 'Spring Boot'
+
+analysis:
+  languageVersion: '17'
+  detectedFrameworks:
+    - 'Spring Boot'
+    - 'Spring Web'
+  buildTools:
+    - 'Maven'
+  testFrameworks:
+    - 'JUnit'
+  coverageTools:
+    - 'JaCoCo'
+  detectedPorts:
+    http: '8080'
+    management: '8081'
+  healthChecks:
+    - '/actuator/health'
+  subprojects: 0
+
+artifacts:
+  type: 'jar'
+  path: 'target/*.jar'
+  repository: 'nexus-maven'
+  dockerImage: '$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA'
+
+dependencies:
+  count: 3
+  items:
+    - name: 'spring-boot-starter-web'
+      version: '3.1.0'
+    - name: 'junit-jupiter'
+      version: '5.9.0'
+    - name: 'jacoco-maven-plugin'
+      version: '0.8.10'
+
+caching:
+  Maven: '~/.m2/repository'
+
+recommendations:
+  - 'Enable JaCoCo coverage reporting'
+  - 'Add integration tests'
+  - 'Consider using Spring Boot DevTools for development'
+

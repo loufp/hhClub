@@ -1,4 +1,3 @@
-using LibGit2Sharp;
 namespace Ci_Cd.Services;
 
 public interface IGitServices

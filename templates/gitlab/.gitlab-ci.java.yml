@@ -1,0 +1,71 @@
+stages:
+  - build
+  - test
+  - sonar
+  - docker
+  - publish
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  IMAGE: "{{IMAGE_NAME}}"
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  script:
+    - {{BUILD_CMD}}
+  artifacts:
+    paths:
+      - target/*.jar
+
+test:
+  stage: test
+  script:
+    - {{TEST_CMD}}
+  artifacts:
+    when: always
+    reports:
+      junit: target/surefire-reports/*.xml
+
+sonar:
+  stage: sonar
+  script:
+    - mvn sonar:sonar -Dsonar.host.url={{SONAR_HOST}} -Dsonar.login=$SONAR_TOKEN
+  rules:
+    - if: $SONAR_TOKEN
+
+docker:
+  stage: docker
+  image: docker:20-dind
+  services:
+    - docker:20-dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker push $IMAGE:$CI_COMMIT_SHORT_SHA
+
+publish:
+  stage: publish
+  script:
+    - curl -u $NEXUS_USER:$NEXUS_PASSWORD --upload-file target/*.jar {{NEXUS_URL}}/repository/maven-releases/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploy to staging — implement your deploy here"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+deploy_prod:
+  stage: deploy
+  script:
+    - echo "Deploy to production — implement your deploy here"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
